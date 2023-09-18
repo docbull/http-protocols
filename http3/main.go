@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
@@ -17,6 +18,15 @@ import (
 )
 
 type binds []string
+
+type Segment struct {
+	Number string `json:"segment"`
+	Data   []byte `json:"data"`
+}
+
+type Segments struct {
+	Requests []Segment
+}
 
 func (b binds) String() string {
 	return strings.Join(b, ",")
@@ -75,6 +85,27 @@ func setupHandler(www string) http.Handler {
 			0x61, 0x00, 0x00, 0x00, 0xf0, 0x00, 0x01, 0xe2, 0xb8, 0x75, 0x22, 0x00,
 			0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
 		})
+	})
+
+	mux.HandleFunc("/segment", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.URL.Path, r.Proto)
+
+		seg, err := ioutil.ReadFile("seg/master0.ts")
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		// data := Segment{
+		// 	Number: "seg",
+		// 	Data:   seg,
+		// }
+
+		// request := Segments{}
+		// request.Requests = append(request.Requests, data)
+
+		// mRequest, _ := json.Marshal(request)
+
+		w.Write(seg)
 	})
 
 	return mux
